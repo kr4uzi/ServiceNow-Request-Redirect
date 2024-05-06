@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_424426_req_redir.RequestUtilClient</api_name>
+        <caller_access/>
+        <client_callable>true</client_callable>
+        <description/>
+        <name>RequestUtilClient</name>
+        <script><![CDATA[var RequestUtilClient = Class.create();
+RequestUtilClient.prototype = Object.extendsObject(global.AbstractAjaxProcessor, {
+	
+	getRequestInfo: function () {
+		const result = {
+			status: 'error',
+			message: ''
+		};
+
+		const reqSysID = this.getParameter('request');
+		if (reqSysID) {
+			const ritmGr = new GlideRecordSecure('sc_req_item');
+			ritmGr.addQuery('request', reqSysID);
+			ritmGr.setLimit(50);
+			ritmGr.query();
+
+			const ritmSysIDs = [];
+			while (ritmGr.next()) {
+				ritmSysIDs.push(ritmGr.getUniqueValue());
+			}
+			
+			result.status = 'success';
+			result.ritms = ritmSysIDs;
+		} else {
+			result.message = gs.getMessage('req_redir_missing_parameter', 'request');
+		}
+		
+		return JSON.stringify(result);
+	},
+
+    type: 'RequestUtilClient'
+});]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>markus.kraus</sys_created_by>
+        <sys_created_on>2024-05-06 16:43:23</sys_created_on>
+        <sys_id>8c1777f0934a02101f07f5f08bba1040</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>RequestUtilClient</sys_name>
+        <sys_package display_value="Service Portal+ Request Redirect" source="x_424426_req_redir">c612abf893c602101f07f5f08bba107d</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="Service Portal+ Request Redirect">c612abf893c602101f07f5f08bba107d</sys_scope>
+        <sys_update_name>sys_script_include_8c1777f0934a02101f07f5f08bba1040</sys_update_name>
+        <sys_updated_by>markus.kraus</sys_updated_by>
+        <sys_updated_on>2024-05-06 16:43:23</sys_updated_on>
+    </sys_script_include>
+</record_update>

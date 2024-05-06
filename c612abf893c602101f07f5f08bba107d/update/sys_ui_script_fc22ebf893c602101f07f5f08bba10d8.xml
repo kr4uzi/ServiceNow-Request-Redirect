@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_ui_script">
+    <sys_ui_script action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <description>Redirects to user directly to a RITM if only a single RITM is being ordered by a Order Guide.</description>
+        <global>false</global>
+        <ignore_in_now_experience>false</ignore_in_now_experience>
+        <name>x_424426_req_redir.orderguide_redirect</name>
+        <script><![CDATA[var x_424426_req_redir = x_424426_req_redir || {};
+x_424426_req_redir.orderguide_redirect = (function() {
+	"use strict";
+	
+	/* global setTimeout */
+	/* eslint no-undef: "error" */
+	if (x_424426_req_redir.orderguide_redirect) {
+		return x_424426_req_redir.orderguide_redirect;
+	}
+	
+	const infusedIdentifier = 'orderguide_redirect-infused';
+	const widgets = {
+		SC_ORDER_GUIDE: '480ca054db03320064301150f0b8f545'
+	};
+	setTimeout(function () {
+		var $window = this;
+		
+		var observer = new $window.MutationObserver(function (mutations) {
+			for (var i = 0; i < mutations.length; i++) {
+				var mutation = mutations[i];
+				if (mutation.addedNodes) {
+					for (var j = 0; j < mutation.addedNodes.length; j++) {
+						var node = mutation.addedNodes[j];
+						if (node.classList) {
+							for (let widget in widgets) {
+								const widgetSysID = widgets[widget];
+								if (node.classList.contains('v' + widgetSysID) &&
+									!node.classList.contains(infusedIdentifier)) {
+									node.classList.add(infusedIdentifier);
+									new Infuse($window, node, widgetSysID);
+									observer.disconnect();
+									break;
+								}
+							}
+						}
+					}
+				}
+			}   
+		});
+
+		observer.observe($window.document, {
+			childList: true,
+			subtree: true
+		});
+	});
+
+	return {
+		version: '1.0.0',
+		type: 'orderguide_redirect'
+	};
+	
+	function Infuse($window, node, widgetSysID) {
+		const $element = $window.angular.element(node);
+		const $scope = $element.scope();
+		const $injector = $element.injector();
+		const $location = $injector.get('$location');
+		const $rootScope = $injector.get('$rootScope');
+		
+		$scope.options.auto_redirect = 'false';
+		$rootScope.$on('$sp.sc_order_guide.submitted', function ($event, request) {
+			const ga = new $window.GlideAjax('x_424426_req_redir.RequestUtilClient').setScope('x_424426_req_redir');
+			ga.addParam('sysparm_name', 'getRequestInfo');
+			ga.addParam('request', request.sys_id);
+			ga.getXMLAnswer(function (result) {
+				result = JSON.parse(result);
+				if (result && result.status == 'success') {
+					if (result.ritms.length == '1') {
+						$location.search('id=ticket&table=sc_req_item&sys_id=' + result.ritms[0]);
+					} else {
+						if ($scope.options.isServiceWorkspace && $scope.options.hide_actions)
+							$location.search('id=sc_request&is_new_order=true&table=sc_request&sys_id=' + $scope.data.result.request_id + '&hide_actions=' + $scope.options.hide_actions);
+						else
+							$location.search('id=sc_request&is_new_order=true&table=sc_request&sys_id=' + $scope.data.result.request_id);
+					}
+				}
+			});
+		});
+	}
+})();
+]]></script>
+        <script_name>orderguide_redirect</script_name>
+        <sys_class_name>sys_ui_script</sys_class_name>
+        <sys_created_by>markus.kraus</sys_created_by>
+        <sys_created_on>2024-05-06 14:56:56</sys_created_on>
+        <sys_id>fc22ebf893c602101f07f5f08bba10d8</sys_id>
+        <sys_mod_count>14</sys_mod_count>
+        <sys_name>x_424426_req_redir.orderguide_redirect</sys_name>
+        <sys_package display_value="Service Portal+ Request Redirect" source="x_424426_req_redir">c612abf893c602101f07f5f08bba107d</sys_package>
+        <sys_policy/>
+        <sys_scope display_value="Service Portal+ Request Redirect">c612abf893c602101f07f5f08bba107d</sys_scope>
+        <sys_update_name>sys_ui_script_fc22ebf893c602101f07f5f08bba10d8</sys_update_name>
+        <sys_updated_by>markus.kraus</sys_updated_by>
+        <sys_updated_on>2024-05-06 17:33:24</sys_updated_on>
+        <ui_type>1</ui_type>
+        <use_scoped_format>true</use_scoped_format>
+    </sys_ui_script>
+</record_update>
